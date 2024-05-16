@@ -51,7 +51,7 @@ firebase.initializeApp({
 // @ts-ignore
 const messaging = firebase.messaging()
 
-messaging.onBackgroundMessage((payload: any) => {
+messaging.onBackgroundMessage(async (payload: any) => {
   console.log(
       '[firebase-messaging-sw.js] Received background message ',
       payload
@@ -60,5 +60,5 @@ messaging.onBackgroundMessage((payload: any) => {
   const notificationOptions = {
     body: 'notification body',
   };
-  self.registration.showNotification(notificationTitle, notificationOptions);
+  await self.registration.showNotification(notificationTitle, notificationOptions);
 })
