@@ -11,21 +11,24 @@ const useFcmToken = () => {
         const retrieveToken = async () => {
             try {
                 if (typeof window !== 'undefined' && 'serviceWorker' in navigator) {
-                    const messaging = getMessaging(firebaseApp);
-
                     // Request notification permission
                     const permission = await Notification.requestPermission();
                     setNotificationPermissionStatus(permission);
+                    const messaging = getMessaging(firebaseApp);
 
                     if (permission === 'granted') {
-                        const currentToken = await getToken(messaging, {
-                            vapidKey: process.env.NEXT_PUBLIC_WEB_PUSH_KEY, // Replace with your Firebase project's VAPID key
-                        });
-                        if (currentToken) {
-                            setToken(currentToken);
-                        } else {
-                            console.log('No registration token available. Request permission to generate one.');
-                        }
+                        navigator.serviceWorker.ready.then(async reg => {
+                            const currentToken = await getToken(messaging, {
+                                vapidKey: process.env.NEXT_PUBLIC_WEB_PUSH_KEY, // Replace with your Firebase project's VAPID key
+                                serviceWorkerRegistration: reg
+                            });
+                            if (currentToken) {
+                                setToken(currentToken);
+                            } else {
+                                console.log('No registration token available. Request permission to generate one.');
+                            }
+                        })
+
                     }
                 }
             } catch (error) {
