@@ -1,9 +1,11 @@
 import { defaultCache } from "@serwist/next/worker";
 import type { PrecacheEntry, SerwistGlobalConfig } from "serwist";
 import { Serwist } from "serwist";
+import { initializeApp } from 'firebase/app'
+import { getMessaging } from 'firebase/messaging'
 
-importScripts('https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js');
-importScripts('https://www.gstatic.com/firebasejs/10.12.0/firebase-messaging-compat.js');
+// importScripts('https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js');
+// importScripts('https://www.gstatic.com/firebasejs/10.12.0/firebase-messaging-compat.js');
 
 
 declare global {
@@ -38,7 +40,16 @@ const serwist = new Serwist({
 serwist.addEventListeners();
 
 // @ts-ignore
-firebase.initializeApp({
+// firebase.initializeApp({
+//   apiKey: process.env.NEXT_PUBLIC_FCM_API_KEY,
+//   authDomain: process.env.NEXT_PUBLIC_FCM_AUTH_DOMAIN,
+//   projectId: process.env.NEXT_PUBLIC_FCM_PROJECT_ID,
+//   storageBucket: process.env.NEXT_PUBLIC_FCM_STORAGE_BUCKET,
+//   messagingSenderId: process.env.NEXT_PUBLIC_FCM_SENDER_ID,
+//   appId: process.env.NEXT_PUBLIC_FCM_APP_ID,
+// // })
+
+const firebaseApp = initializeApp({
   apiKey: process.env.NEXT_PUBLIC_FCM_API_KEY,
   authDomain: process.env.NEXT_PUBLIC_FCM_AUTH_DOMAIN,
   projectId: process.env.NEXT_PUBLIC_FCM_PROJECT_ID,
@@ -47,9 +58,11 @@ firebase.initializeApp({
   appId: process.env.NEXT_PUBLIC_FCM_APP_ID,
 })
 
+const messaging = getMessaging(firebaseApp)
+
 
 // @ts-ignore
-const messaging = firebase.messaging()
+// const messaging = firebase.messaging()
 
 messaging.onBackgroundMessage(async (payload: any) => {
   console.log(
