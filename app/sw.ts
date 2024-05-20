@@ -1,9 +1,8 @@
 import { defaultCache } from "@serwist/next/worker";
 import type { PrecacheEntry, SerwistGlobalConfig } from "serwist";
 import { Serwist } from "serwist";
-
-importScripts('https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js');
-importScripts('https://www.gstatic.com/firebasejs/10.12.0/firebase-messaging-compat.js');
+import { initializeApp } from 'firebase/app'
+import { getMessaging, onBackgroundMessage } from 'firebase/messaging/sw'
 
 
 declare global {
@@ -37,8 +36,8 @@ const serwist = new Serwist({
 
 serwist.addEventListeners();
 
-// @ts-ignore
-firebase.initializeApp({
+
+const firebaseApp = initializeApp({
   apiKey: process.env.NEXT_PUBLIC_FCM_API_KEY,
   authDomain: process.env.NEXT_PUBLIC_FCM_AUTH_DOMAIN,
   projectId: process.env.NEXT_PUBLIC_FCM_PROJECT_ID,
@@ -47,11 +46,9 @@ firebase.initializeApp({
   appId: process.env.NEXT_PUBLIC_FCM_APP_ID,
 })
 
+const messaging = getMessaging(firebaseApp)
 
-// @ts-ignore
-const messaging = firebase.messaging()
-
-messaging.onBackgroundMessage(async (payload: any) => {
+onBackgroundMessage(messaging, async (payload) => {
   console.log(
       '[firebase-messaging-sw.js] Received background message ',
       payload
