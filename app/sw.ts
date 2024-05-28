@@ -8,6 +8,48 @@ import isEqual from 'lodash/isEqual'
 import type { FirebaseApp, FirebaseOptions } from 'firebase/app'
 import type { Unsubscribe } from 'firebase/messaging/sw'
 
+// INDEXED_DB
+
+const DB_NAME = 'service-worker-config'
+const DB_VERSION = 1
+const STORE_NAME = 'firebaseConfig'
+
+async function openDB () {
+  return new Promise<IDBDatabase>((resolve, reject) => {
+    const req = indexedDB.open(DB_NAME, DB_VERSION)
+    req.onerror = (_) => reject(req.error)
+    req.onsuccess = (_) => resolve(req.result)
+    req.onupgradeneeded = (_) => {
+      const db = req.result;
+      if (!db.objectStoreNames.contains(STORE_NAME)) {
+        db.createObjectStore(STORE_NAME, { keyPath: 'id' });
+      }
+    }
+  })
+}
+
+async function saveConfig(config: FirebaseOptions) {
+  const db = await openDB();
+  return new Promise<void>((resolve, reject) => {
+    const transaction = db.transaction(STORE_NAME, 'readwrite');
+    const store = transaction.objectStore(STORE_NAME);
+    store.put({ id: 'firebaseConfig', ...config });
+    transaction.oncomplete = () => resolve();
+    transaction.onerror = () => reject(transaction.error);
+  })
+}
+
+async function getConfig(): Promise<FirebaseOptions | undefined> {
+  const db = await openDB();
+  return new Promise<FirebaseOptions | undefined>((resolve, reject) => {
+    const transaction = db.transaction(STORE_NAME, 'readonly');
+    const store = transaction.objectStore(STORE_NAME);
+    const request = store.get('firebaseConfig');
+    request.onsuccess = () => resolve(request.result);
+    request.onerror = () => reject(request.error);
+  });
+}
+
 // SERWIST SECTION
 
 declare global {
@@ -82,7 +124,16 @@ async function initFirebaseApp (newConfig: FirebaseOptions) {
   })
 
   config = newConfig
+  await saveConfig(newConfig)
 }
+
+self.addEventListener('activate', (event) => {
+  event.waitUntil(getConfig().then((cfg => {
+    if (cfg) {
+      return initFirebaseApp(cfg)
+    }
+  })))
+})
 
 self.addEventListener('message',  (event) => {
   const data = event.data
