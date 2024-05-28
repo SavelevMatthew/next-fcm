@@ -84,11 +84,11 @@ async function initFirebaseApp (newConfig: FirebaseOptions) {
   config = newConfig
 }
 
-self.addEventListener('message', async (event) => {
+self.addEventListener('message',  (event) => {
   const data = event.data
   if (isValidConfig(data)) {
     if (!isEqual(config, data)) {
-      await initFirebaseApp(data)
+      event.waitUntil(initFirebaseApp(data))
     }
   }
 })
