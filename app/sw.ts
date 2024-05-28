@@ -128,8 +128,10 @@ async function initFirebaseApp (newConfig: FirebaseOptions) {
 }
 
 self.addEventListener('activate', (event) => {
+  console.log('I\'m activated')
   event.waitUntil(getConfig().then((cfg => {
     if (cfg) {
+      console.log('INIT FB')
       return initFirebaseApp(cfg)
     }
   })))
