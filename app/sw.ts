@@ -1,9 +1,14 @@
 import { defaultCache } from "@serwist/next/worker";
 import type { PrecacheEntry, SerwistGlobalConfig } from "serwist";
 import { Serwist } from "serwist";
-import { initializeApp } from 'firebase/app'
+import { initializeApp, deleteApp } from 'firebase/app'
 import { getMessaging, onBackgroundMessage } from 'firebase/messaging/sw'
+import isEqual from 'lodash/isEqual'
 
+import type { FirebaseApp, FirebaseOptions } from 'firebase/app'
+import type { Unsubscribe } from 'firebase/messaging/sw'
+
+// SERWIST SECTION
 
 declare global {
   interface WorkerGlobalScope extends SerwistGlobalConfig {
@@ -36,26 +41,54 @@ const serwist = new Serwist({
 
 serwist.addEventListeners();
 
+// FIREBASE SECTION
+const keysToCheck = ['apiKey', 'authDomain', 'projectId', 'storageBucket', 'messagingSenderId', 'appId']
 
-const firebaseApp = initializeApp({
-  apiKey: process.env.NEXT_PUBLIC_FCM_API_KEY,
-  authDomain: process.env.NEXT_PUBLIC_FCM_AUTH_DOMAIN,
-  projectId: process.env.NEXT_PUBLIC_FCM_PROJECT_ID,
-  storageBucket: process.env.NEXT_PUBLIC_FCM_STORAGE_BUCKET,
-  messagingSenderId: process.env.NEXT_PUBLIC_FCM_SENDER_ID,
-  appId: process.env.NEXT_PUBLIC_FCM_APP_ID,
-})
+let firebaseApp: FirebaseApp | undefined
+let config: FirebaseOptions | undefined
+let unsubscribe: Unsubscribe | undefined
 
-const messaging = getMessaging(firebaseApp)
+function isValidConfig (data: any): data is FirebaseOptions {
+  return (
+      typeof data === 'object' &&
+      !Array.isArray(data) &&
+      data !== null &&
+      keysToCheck.every(key => data.hasOwnProperty(key) && typeof data[key] === 'string')
+  )
+}
 
-onBackgroundMessage(messaging, async (payload) => {
-  console.log(
-      '[firebase-messaging-sw.js] Received background message ',
-      payload
-  );
-  const notificationTitle = 'Notification title';
-  const notificationOptions = {
-    body: 'notification body',
-  };
-  await self.registration.showNotification(notificationTitle, notificationOptions);
+async function initFirebaseApp (newConfig: FirebaseOptions) {
+  if (unsubscribe) {
+    unsubscribe()
+  }
+
+  if (firebaseApp) {
+    await deleteApp(firebaseApp)
+  }
+
+  firebaseApp = initializeApp(newConfig)
+  const messaging = getMessaging(firebaseApp)
+
+  unsubscribe = onBackgroundMessage(messaging, async (payload) => {
+    console.log(
+        '[firebase-messaging-sw.js] Received background message ',
+        payload
+    );
+    const notificationTitle = 'Notification title';
+    const notificationOptions = {
+      body: 'notification body',
+    };
+    await self.registration.showNotification(notificationTitle, notificationOptions);
+  })
+
+  config = newConfig
+}
+
+self.addEventListener('message', async (event) => {
+  const data = event.data
+  if (isValidConfig(data)) {
+    if (!isEqual(config, data)) {
+      await initFirebaseApp(data)
+    }
+  }
 })
