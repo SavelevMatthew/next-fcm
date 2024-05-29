@@ -16,6 +16,8 @@ declare global {
 
 declare const self: ServiceWorkerGlobalScope;
 
+console.log('BEGIN')
+
 const serwist = new Serwist({
   precacheEntries: self.__SW_MANIFEST,
   skipWaiting: true,
@@ -59,3 +61,5 @@ onBackgroundMessage(messaging, async (payload) => {
   };
   await self.registration.showNotification(notificationTitle, notificationOptions);
 })
+
+console.log('I\'m here, do you see me?')
