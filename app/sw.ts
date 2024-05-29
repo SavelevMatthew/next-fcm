@@ -87,7 +87,20 @@ self.addEventListener('activate', () => {
 serwist.addEventListeners()
 
 
-const fba = initializeApp({})
+const fba = initializeApp({
+  // apiKey: process.env.NEXT_PUBLIC_FCM_API_KEY,
+  // authDomain: process.env.NEXT_PUBLIC_FCM_AUTH_DOMAIN,
+  // projectId: process.env.NEXT_PUBLIC_FCM_PROJECT_ID,
+  // storageBucket: process.env.NEXT_PUBLIC_FCM_STORAGE_BUCKET,
+  // messagingSenderId: process.env.NEXT_PUBLIC_FCM_SENDER_ID,
+  // appId: process.env.NEXT_PUBLIC_FCM_APP_ID,
+  apiKey: '123',
+  authDomain: '123',
+  projectId: '123',
+  storageBucket: '123',
+  messagingSenderId: '123',
+  appId: '123',
+})
 
 const msg = getMessaging(fba)
 
