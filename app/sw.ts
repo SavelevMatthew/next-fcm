@@ -87,7 +87,7 @@ self.addEventListener('activate', () => {
 serwist.addEventListeners()
 
 
-const fba = initializeApp()
+const fba = initializeApp({})
 
 const msg = getMessaging(fba)
 
