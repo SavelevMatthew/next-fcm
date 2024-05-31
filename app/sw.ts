@@ -34,5 +34,5 @@ const serwist = new Serwist({
 serwist.addEventListeners()
 
 self.addEventListener('push', (event) => {
-  console.log(JSON.stringify(event.data, null, 2))
+  console.log(JSON.stringify(event.data?.json(), null, 2))
 })
