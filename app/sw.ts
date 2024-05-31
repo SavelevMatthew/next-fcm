@@ -34,5 +34,10 @@ const serwist = new Serwist({
 serwist.addEventListeners()
 
 self.addEventListener('push', (event) => {
-  console.log(JSON.stringify(event.data?.json(), null, 2))
+  const payload = event.data?.json()
+  if (payload && payload.notification && payload.notification.title) {
+    event.waitUntil(self.registration.showNotification(payload.notification.title, {
+      body: payload.notification.body
+    }))
+  }
 })
