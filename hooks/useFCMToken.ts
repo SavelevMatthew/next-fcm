@@ -1,11 +1,11 @@
 'use client'
-import {useState, useEffect, useCallback} from 'react'
+import {useState, useCallback} from 'react'
 import { getMessaging, getToken } from 'firebase/messaging'
 import firebaseApp from '../firebase/firebase'
 
 const useFcmToken = () => {
     const [token, setToken] = useState('');
-    const [notificationPermissionStatus, setNotificationPermissionStatus] = useState('');
+    const [notificationPermissionStatus, setNotificationPermissionStatus] = useState(Notification.permission);
 
     const retrieveToken = useCallback(async () => {
         try {
