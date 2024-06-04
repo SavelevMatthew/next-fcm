@@ -18,6 +18,7 @@ export default function Page() {
         </pre>
         </details>
         <FireBaseHandler/>
+        <a href={'/nothing'}>Unexisting link to test offline</a>
     </>
   );
 }
