@@ -1,4 +1,6 @@
-# Serwist example - next-web-push
+# Serwist example - next-web-push 
+
+asdasd
 
 This example demonstrates how to add push notifications to an app using Serwist with Next.js.
 
